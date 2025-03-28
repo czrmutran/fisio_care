@@ -136,20 +136,20 @@ yarn dev
     - O frontend estará disponível geralmente em http://localhost:5173/.
 
 ## 💡 Boas Práticas
-### Ambiente Virtual:
-    - Sempre utilize um ambiente virtual para isolar as dependências do seu projeto e evitar conflitos com outras instalações Python.
+- **Ambiente Virtual:**
+Sempre utilize um ambiente virtual para isolar as dependências do seu projeto e evitar conflitos com outras instalações Python.
 
-### Gerenciamento de Variáveis de Ambiente:
-    - Utilize arquivos .env para armazenar configurações sensíveis (como URL da API, chaves secretas, etc.) e evite versioná-los (adicione-os ao .gitignore).
+- **Gerenciamento de Variáveis de Ambiente:**
+Utilize arquivos .env para armazenar configurações sensíveis (como URL da API, chaves secretas, etc.) e evite versioná-los (adicione-os ao .gitignore).
 
-### Estrutura de Código:
-    - Mantenha uma separação clara entre backend e frontend. Siga os padrões do Django para a organização de apps e dos endpoints REST e utilize componentes React bem estruturados e reutilizáveis.
+- **Estrutura de Código:**
+Mantenha uma separação clara entre backend e frontend. Siga os padrões do Django para a organização de apps e dos endpoints REST e utilize componentes React bem estruturados e reutilizáveis.
 
-### Autenticação e Segurança:
-    - Utilize JWT para autenticação, garantindo que apenas usuários autenticados possam acessar os endpoints protegidos. Nunca retorne senhas ou dados sensíveis na resposta das APIs.
+- **Autenticação e Segurança:**
+Utilize JWT para autenticação, garantindo que apenas usuários autenticados possam acessar os endpoints protegidos. Nunca retorne senhas ou dados sensíveis na resposta das APIs.
 
-### Estilização e Responsividade:
-    - O uso de Tailwind CSS no frontend ajuda a manter uma consistência visual e a construir interfaces responsivas de maneira rápida.
+- **Estilização e Responsividade:**
+O uso de Tailwind CSS no frontend ajuda a manter uma consistência visual e a construir interfaces responsivas de maneira rápida.
 
 ### 🤝 Contribuição
 1. Faça um fork do repositório.
