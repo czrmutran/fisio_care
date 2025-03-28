@@ -54,6 +54,7 @@ function Home() {
             <li><a href="#specialty">Especialidades</a></li>
             <li><a href="#therapists">Profissionais</a></li>
             <li><a href="#contact">Contato</a></li>
+            <li><a href="/controle">Seção Doutor</a></li>
           </ul>
         </nav>
       </header>
