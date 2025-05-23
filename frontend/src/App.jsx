@@ -1,34 +1,38 @@
-import react from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Home from './pages/Home'
-import NotFound from './pages/NotFound'
-import ProtectedRoute from './components/ProtectedRoute'
-import Controle from './pages/Fisioterapia/Controle'
-
-function Logout(){
-  localStorage.clear()
-  return <Navigate to="/login" />
-}
-
-function RegisterAndLogout(){
-  localStorage.clear()
-  return <Register />
-}
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { AuthProvider } from "./context/AuthContext"
+import ProtectedRoute from "./components/ProtectedRoute"
+import Home from "./pages//Home"
+import Login from "./pages/Login"
+import Register from "./pages/Register"
+import Dashboard from "./pages/Dashboard"
+import AgendarConsulta from "./pages/AgendarConsulta"
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />}/>
-        <Route path='/controle' element={<Controle />}/>
-        <Route path="/login" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
-        <Route path="*" element={<NotFound />}></Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Set Home as the default route */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+                <Dashboard />
+            }
+          />
+          <Route
+            path="/agendar-consulta"
+            element={
+                <AgendarConsulta />
+            }
+          />
+          {/* Redirect unknown routes to home */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 
