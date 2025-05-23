@@ -97,9 +97,6 @@ const AgendarConsulta = () => {
             Fisio Care
           </Link>
           <div className="flex space-x-4">
-            <Link to="/" className="px-4 py-2 text-blue-600 hover:text-blue-800">
-              Home
-            </Link>
             <Link to="/dashboard" className="px-4 py-2 text-blue-600 hover:text-blue-800">
               Dashboard
             </Link>

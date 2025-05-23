@@ -40,9 +40,6 @@ const Dashboard = () => {
             Fisio Care
           </Link>
           <div className="flex space-x-4">
-            <Link to="/" className="px-4 py-2 text-blue-600 hover:text-blue-800">
-              Home
-            </Link>
             <Link to="/agendar-consulta" className="px-4 py-2 text-blue-600 hover:text-blue-800">
               Agendar Consulta
             </Link>
