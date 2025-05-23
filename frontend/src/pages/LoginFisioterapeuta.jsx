@@ -70,11 +70,7 @@ const LoginFisioterapeuta = () => {
 
           {error && <p className="mb-4 text-red-500">{error}</p>}
 
-          <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded-md">
-            <p className="font-semibold">Credenciais de teste:</p>
-            <p>Username: fisio</p>
-            <p>Senha: password123</p>
-          </div>
+          
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
