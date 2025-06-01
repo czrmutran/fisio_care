@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
+import { supabase } from "../lib/supabaseClient"
+
 import {
   Users,
   Calendar,
@@ -189,13 +191,14 @@ const DashboardFisioterapeuta = () => {
   const [fisioterapeuta, setFisioterapeuta] = useState(null)
 
   useEffect(() => {
-    // Check if user is logged in
-    const token = localStorage.getItem("fisioterapeutaToken")
-    if (!token) {
-      navigate("/login-fisioterapeuta")
-      return
+    const checkLogin = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (!data?.user) {
+        navigate("/login-fisioterapeuta")
+      }
     }
 
+    checkLogin()
     // Get fisioterapeuta data from localStorage
     const storedFisioterapeuta = localStorage.getItem("fisioterapeutaData")
     if (storedFisioterapeuta) {

@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "../context/AuthContext"
+import { loginWithUsername } from "../api/loginService"
+
 
 const Login = () => {
   const [username, setUsername] = useState("")
@@ -11,19 +12,17 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const navigate = useNavigate()
-  const { login } = useAuth()
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
     try {
-      await login({ username, password })
-      // Redirect to home page instead of dashboard
-      navigate("/")
+      await loginWithUsername({ username, password })
+      navigate("/dashboard") // ou outro caminho que quiser
     } catch (err) {
-      setError(err.message || "Credenciais inválidas. Tente novamente.")
+      setError(err.message || "Erro ao fazer login.")
     } finally {
       setIsLoading(false)
     }

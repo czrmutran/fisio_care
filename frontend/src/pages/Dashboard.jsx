@@ -7,7 +7,7 @@ import api from "../api"
 import { Calendar, Clock, FileText } from "lucide-react"
 
 const Dashboard = () => {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [consultations, setConsultations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")

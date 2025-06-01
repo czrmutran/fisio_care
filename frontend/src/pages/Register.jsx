@@ -5,7 +5,10 @@ import { useNavigate, Link } from "react-router-dom"
 import RegisterOne from "../components/registerStep/RegisterOne"
 import RegisterTwo from "../components/registerStep/RegisterTwo"
 import RegisterThree from "../components/registerStep/RegisterThree"
-import { authService } from "../api"
+import { supabase } from "../lib/supabaseClient"
+
+
+
 
 const Register = () => {
   const [step, setStep] = useState(0)
@@ -90,30 +93,46 @@ const Register = () => {
 
     const formattedDate = new Date(birthDate).toISOString().split("T")[0]
 
-    const payload = {
-      username,
-      password,
-      name,
-      cpf,
-      rg,
-      phone,
-      email,
-      address,
-      birth_date: formattedDate,
-    }
-
     try {
-      await authService.register(payload)
-      setSuccess("Usuário registrado com sucesso! Redirecionando para o login...")
-      setTimeout(() => {
-        navigate("/login")
-      }, 2000)
+      // 1. Cria o usuário no auth
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username
+          }
+        }
+      })
+
+
+      if (signUpError) throw signUpError
+
+      // 2. Insere os dados complementares na tabela `clientes`
+      const { error: insertError } = await supabase
+        .from("clientes")
+        .insert({
+          id: signUpData.user.id,
+          nome_completo: name,
+          cpf,
+          rg,
+          telefone: phone,
+          endereco: address,
+          data_nascimento: formattedDate
+        })
+
+      if (insertError) throw insertError
+
+      setSuccess("Cadastro realizado com sucesso! Verifique seu e-mail.")
+      setTimeout(() => navigate("/login"), 2000)
     } catch (err) {
-      setError(err.message || "Erro ao registrar usuário. Verifique os dados e tente novamente.")
+      console.error(err)
+      setError("Erro no cadastro: " + err.message)
     } finally {
       setIsLoading(false)
     }
   }
+
 
   return (
     <div className="flex h-screen">

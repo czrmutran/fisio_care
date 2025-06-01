@@ -3,6 +3,10 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Stethoscope, CheckCircle } from "lucide-react"
+import { supabase } from "../lib/supabaseClient"
+
+
+
 
 const CadastroFisioterapeuta = () => {
   const [formData, setFormData] = useState({
@@ -57,34 +61,42 @@ const CadastroFisioterapeuta = () => {
 
     setIsLoading(true)
 
-    // Simulate API delay
-    setTimeout(() => {
-      // Mock successful registration
-      setSuccess("Fisioterapeuta registrado com sucesso! Redirecionando para o login...")
-
-      // Store mock data in localStorage for demo purposes
-      const mockFisioterapeuta = {
-        id: Math.floor(Math.random() * 1000),
-        nome: formData.nome,
+    try {
+      // 1. Cadastra no auth
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            username: formData.username
+          }
+        }
+      })
+
+
+      if (signUpError) throw signUpError
+
+      // 2. Insere dados na tabela `fisioterapeutas`
+      const { error: insertError } = await supabase.from("fisioterapeutas").insert({
+        id: signUpData.user.id,
+        nome_completo: formData.nome,
         crefito: formData.crefito,
-        cargo: formData.cargo,
-        telefone: formData.telefone,
-        foto: "/physiotherapist-profile.png",
-        is_active: true,
-        created_at: new Date().toISOString(),
-      }
+        especialidade: formData.cargo,
+        telefone: formData.telefone
+      })
 
-      localStorage.setItem("mockRegisteredFisioterapeuta", JSON.stringify(mockFisioterapeuta))
+      if (insertError) throw insertError
 
-      // Redirect after delay
-      setTimeout(() => {
-        navigate("/login-fisioterapeuta")
-      }, 2000)
-
+      setSuccess("Cadastro realizado com sucesso! Verifique seu e-mail.")
+      setTimeout(() => navigate("/login-fisioterapeuta"), 2000)
+    } catch (err) {
+      console.error(err)
+      setError("Erro ao cadastrar: " + err.message)
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
+
 
   return (
     <div className="flex h-screen">
@@ -111,6 +123,19 @@ const CadastroFisioterapeuta = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
+              <label htmlFor="nome" className="block mb-2 font-semibold">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                name="username"
+                placeholder="Digite seu username"
+                value={formData.username}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                required
+              />
               <label htmlFor="nome" className="block mb-2 font-semibold">
                 Nome Completo
               </label>

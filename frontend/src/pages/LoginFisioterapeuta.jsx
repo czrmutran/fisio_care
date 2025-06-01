@@ -3,25 +3,27 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Stethoscope } from "lucide-react"
+import { loginWithUsername } from "../api/loginService"
 
-// Mock credentials for testing
-const MOCK_CREDENTIALS = {
-  username: "fisio",
-  password: "password123",
-}
 
-// Mock fisioterapeuta data
-const MOCK_FISIOTERAPEUTA = {
-  id: 1,
-  nome: "Dr. Ana Silva",
-  email: "ana.silva@fisiocare.com",
-  crefito: "12345-F",
-  cargo: "Fisioterapia Ortopédica",
-  telefone: "(11) 98765-4321",
-  foto: "/physiotherapist-profile.png",
-  is_active: true,
-  created_at: "2023-01-15T10:30:00Z",
-}
+// // Mock credentials for testing
+// const MOCK_CREDENTIALS = {
+//   username: "fisio",
+//   password: "password123",
+// }
+
+// // Mock fisioterapeuta data
+// const MOCK_FISIOTERAPEUTA = {
+//   id: 1,
+//   nome: "Dr. Ana Silva",
+//   email: "ana.silva@fisiocare.com",
+//   crefito: "12345-F",
+//   cargo: "Fisioterapia Ortopédica",
+//   telefone: "(11) 98765-4321",
+//   foto: "/physiotherapist-profile.png",
+//   is_active: true,
+//   created_at: "2023-01-15T10:30:00Z",
+// }
 
 const LoginFisioterapeuta = () => {
   const [username, setUsername] = useState("")
@@ -32,24 +34,20 @@ const LoginFisioterapeuta = () => {
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+  e.preventDefault()
+  setError("")
+  setIsLoading(true)
 
-    // Simulate API delay
-    setTimeout(() => {
-      // Check mock credentials
-      if (username === MOCK_CREDENTIALS.username && password === MOCK_CREDENTIALS.password) {
-        // Store mock data in localStorage
-        localStorage.setItem("fisioterapeutaToken", "mock-jwt-token-fisioterapeuta")
-        localStorage.setItem("fisioterapeutaData", JSON.stringify(MOCK_FISIOTERAPEUTA))
-        navigate("/dashboard-fisioterapeuta")
-      } else {
-        setError("Credenciais inválidas. Tente novamente.")
-      }
-      setIsLoading(false)
-    }, 1000)
-  }
+  try {
+  await loginWithUsername({ username, password })
+  console.log("Login realizado com sucesso como fisioterapeuta")
+  navigate("/dashboard-fisioterapeuta")
+} catch (err) {
+  console.error("Erro ao logar:", err)
+  setError(err.message || "Credenciais inválidas. Tente novamente.")
+}
+
+}
 
   return (
     <div className="flex h-screen">
