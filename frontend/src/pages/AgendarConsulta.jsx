@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
-import api from "../api"
-import { Calendar, Clock, User, Phone, Mail, FileText } from "lucide-react"
+import { supabase } from "../lib/supabaseClient"
+import { Calendar, Clock, User, Phone, Mail, FileText, Stethoscope } from "lucide-react"
 
 const AgendarConsulta = () => {
   const { user } = useAuth()
@@ -12,19 +12,19 @@ const AgendarConsulta = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [medicos, setMedicos] = useState([])
 
-  // Form state
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
     phone: "",
     service: "",
+    fisioterapeuta_id: "",
     date: "",
     time: "",
     symptoms: "",
   })
 
-  // Available services
   const services = [
     "Fisioterapia Ortopédica",
     "Fisioterapia Neurológica",
@@ -34,11 +34,9 @@ const AgendarConsulta = () => {
     "Acupuntura",
   ]
 
-  // Available time slots
   const timeSlots = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
 
   useEffect(() => {
-    // Pre-fill form with user data if available
     if (user) {
       setFormData((prev) => ({
         ...prev,
@@ -48,6 +46,20 @@ const AgendarConsulta = () => {
       }))
     }
   }, [user])
+
+  useEffect(() => {
+    const fetchMedicos = async () => {
+      if (!formData.service) return
+      const { data, error } = await supabase
+        .from("fisioterapeutas")
+        .select("id, nome_completo, especialidade")
+        .eq("especialidade", formData.service)
+
+      if (!error) setMedicos(data)
+    }
+
+    fetchMedicos()
+  }, [formData.service])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -63,25 +75,41 @@ const AgendarConsulta = () => {
     setSuccess("")
     setLoading(true)
 
-    try {
-      await api.post("/consultations/", formData)
-      setSuccess("Consulta agendada com sucesso!")
+    if (!formData.date || formData.date.trim() === "") {
+      setError("Por favor, selecione uma data válida.")
+      setLoading(false)
+      return
+    }
 
-      // Reset form
+    try {
+      const { error } = await supabase.from("consultas").insert({
+        cliente_id: user?.id,
+        fisioterapeuta_id: formData.fisioterapeuta_id,
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.service,
+        date: formData.date,
+        time: formData.time,
+        symptoms: formData.symptoms,
+        status: "agendada",
+      })
+
+      if (error) throw error
+
+      setSuccess("Consulta agendada com sucesso!")
       setFormData({
         full_name: user?.name || "",
         email: user?.email || "",
         phone: user?.phone || "",
         service: "",
+        fisioterapeuta_id: "",
         date: "",
         time: "",
         symptoms: "",
       })
 
-      // Redirect to dashboard after a delay
-      setTimeout(() => {
-        navigate("/dashboard")
-      }, 2000)
+      setTimeout(() => navigate("/dashboard"), 2000)
     } catch (err) {
       setError(err.message || "Erro ao agendar consulta. Tente novamente.")
     } finally {
@@ -93,13 +121,9 @@ const AgendarConsulta = () => {
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <Link to="/" className="text-3xl font-bold text-blue-700">
-            Fisio Care
-          </Link>
+          <Link to="/" className="text-3xl font-bold text-blue-700">Fisio Care</Link>
           <div className="flex space-x-4">
-            <Link to="/dashboard" className="px-4 py-2 text-blue-600 hover:text-blue-800">
-              Dashboard
-            </Link>
+            <Link to="/dashboard" className="px-4 py-2 text-blue-600 hover:text-blue-800">Dashboard</Link>
           </div>
         </div>
       </header>
@@ -114,133 +138,85 @@ const AgendarConsulta = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome Completo
-                </label>
+                <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    type="text"
-                    id="full_name"
-                    name="full_name"
-                    value={formData.full_name}
-                    onChange={handleChange}
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
+                  <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
+                  <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Telefone
-                </label>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Phone className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    type="text"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
+                  <input type="text" id="phone" name="phone" value={formData.phone} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">
-                  Serviço
-                </label>
+                <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">Serviço</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FileText className="h-5 w-5 text-gray-400" />
                   </div>
-                  <select
-                    id="service"
-                    name="service"
-                    value={formData.service}
-                    onChange={handleChange}
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  >
+                  <select id="service" name="service" value={formData.service} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required>
                     <option value="">Selecione um serviço</option>
-                    {services.map((service) => (
-                      <option key={service} value={service}>
-                        {service}
-                      </option>
+                    {services.map((s) => (
+                      <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                  Data
-                </label>
+                <label htmlFor="fisioterapeuta_id" className="block text-sm font-medium text-gray-700 mb-1">Fisioterapeuta</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <Stethoscope className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    min={new Date().toISOString().split("T")[0]} // Prevent past dates
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
+                  <select id="fisioterapeuta_id" name="fisioterapeuta_id" value={formData.fisioterapeuta_id} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    <option value="">Selecione um fisioterapeuta</option>
+                    {medicos.map((m) => (
+                      <option key={m.id} value={m.id}>{m.nome_completo}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
-                  Horário
-                </label>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Calendar className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input type="date" id="date" name="date" value={formData.date} onChange={handleChange} min={new Date().toISOString().split("T")[0]} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">Horário</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Clock className="h-5 w-5 text-gray-400" />
                   </div>
-                  <select
-                    id="time"
-                    name="time"
-                    value={formData.time}
-                    onChange={handleChange}
-                    className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  >
+                  <select id="time" name="time" value={formData.time} onChange={handleChange} className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required>
                     <option value="">Selecione um horário</option>
-                    {timeSlots.map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
+                    {timeSlots.map((t) => (
+                      <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
                 </div>
@@ -248,31 +224,13 @@ const AgendarConsulta = () => {
             </div>
 
             <div>
-              <label htmlFor="symptoms" className="block text-sm font-medium text-gray-700 mb-1">
-                Sintomas ou Observações (opcional)
-              </label>
-              <textarea
-                id="symptoms"
-                name="symptoms"
-                value={formData.symptoms}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              ></textarea>
+              <label htmlFor="symptoms" className="block text-sm font-medium text-gray-700 mb-1">Sintomas ou Observações (opcional)</label>
+              <textarea id="symptoms" name="symptoms" value={formData.symptoms} onChange={handleChange} rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
             </div>
 
             <div className="flex justify-end">
-              <Link
-                to="/dashboard"
-                className="mr-4 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancelar
-              </Link>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-                disabled={loading}
-              >
+              <Link to="/dashboard" className="mr-4 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</Link>
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300" disabled={loading}>
                 {loading ? "Processando..." : "Agendar Consulta"}
               </button>
             </div>

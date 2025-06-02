@@ -7,9 +7,6 @@ import RegisterTwo from "../components/registerStep/RegisterTwo"
 import RegisterThree from "../components/registerStep/RegisterThree"
 import { supabase } from "../lib/supabaseClient"
 
-
-
-
 const Register = () => {
   const [step, setStep] = useState(0)
 

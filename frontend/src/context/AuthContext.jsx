@@ -1,12 +1,15 @@
 "use client"
 
-import { createContext, useState, useContext, useEffect } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+import { supabase } from "../lib/supabaseClient"
 
-const AuthContext = createContext(null)
+// ✅ Define o contexto explicitamente com valor inicial undefined
+const AuthContext = createContext(undefined)
 
-export const AuthProvider = ({ children }) => {
+// ✅ Função nomeada (evita problemas com Fast Refresh)
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [role, setRole] = useState(null) // <- Adicionado para diferenciar cliente/fisioterapeuta
+  const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -18,22 +21,40 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser))
       setRole(storedRole)
     }
+
     setLoading(false)
   }, [])
 
-  const login = (userData, userRole) => {
-    localStorage.setItem("user", JSON.stringify(userData))
-    localStorage.setItem("role", userRole)
-    localStorage.setItem("token", "mock-token") // Substitua se for token real
-    setUser(userData)
-    setRole(userRole)
+  const login = async (userData, userRole) => {
+    try {
+      const table = userRole === "cliente" ? "clientes" : "fisioterapeutas"
+
+      const { data: profileData, error } = await supabase
+        .from(table)
+        .select("*")
+        .eq("id", userData.id)
+        .single()
+
+      if (error) {
+        console.error(`Erro ao buscar dados do ${userRole}:`, error)
+        return
+      }
+
+      const finalUser = { ...userData, ...profileData }
+
+      localStorage.setItem("user", JSON.stringify(finalUser))
+      localStorage.setItem("role", userRole)
+      localStorage.setItem("token", "mock-token")
+
+      setUser(finalUser)
+      setRole(userRole)
+    } catch (err) {
+      console.error("Erro ao fazer login:", err)
+    }
   }
 
   const logout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("refreshToken")
-    localStorage.removeItem("user")
-    localStorage.removeItem("role")
+    localStorage.clear()
     setUser(null)
     setRole(null)
   }
@@ -45,4 +66,11 @@ export const AuthProvider = ({ children }) => {
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+// ✅ Hook nomeado fora do componente
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth deve ser usado dentro de <AuthProvider>")
+  }
+  return context
+}
