@@ -6,28 +6,19 @@ import { useAuth } from "../context/AuthContext"
 
 const Home = () => {
   const navigate = useNavigate()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, role, logout } = useAuth()
 
-  const handleLogin = () => {
-    navigate("/login")
-  }
-
-  const handleRegister = () => {
-    navigate("/register")
-  }
-
+  const handleLogin = () => navigate("/login")
+  const handleRegister = () => navigate("/register")
   const handleLogout = () => {
     logout()
     navigate("/")
   }
-
   const handleDashboard = () => {
-    navigate("/dashboard")
+    if (role === "fisioterapeuta") navigate("/dashboard-fisioterapeuta")
+    else navigate("/dashboard")
   }
-
-  const handleSchedule = () => {
-    navigate("/agendar-consulta")
-  }
+  const handleSchedule = () => navigate("/agendar-consulta")
 
   return (
     <div className="min-h-screen bg-white">
@@ -40,15 +31,15 @@ const Home = () => {
                 Fisio Care
               </Link>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 items-center">
               {isAuthenticated ? (
                 <>
-                  <button onClick={handleDashboard} className="px-4 py-2 text-blue-600 hover:text-blue-800 transition">
-                    Dashboard
-                  </button>
-                  <button onClick={handleSchedule} className="px-4 py-2 text-blue-600 hover:text-blue-800 transition">
-                    Agendar Consulta
-                  </button>
+                  <img
+                    onClick={handleDashboard}
+                    src={user?.foto || "/placeholder.svg"}
+                    alt="Avatar"
+                    className="h-10 w-10 rounded-full cursor-pointer object-cover"
+                  />
                   <button
                     onClick={handleLogout}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"

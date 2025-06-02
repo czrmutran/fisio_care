@@ -4,26 +4,7 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Stethoscope } from "lucide-react"
 import { loginWithUsername } from "../api/loginService"
-
-
-// // Mock credentials for testing
-// const MOCK_CREDENTIALS = {
-//   username: "fisio",
-//   password: "password123",
-// }
-
-// // Mock fisioterapeuta data
-// const MOCK_FISIOTERAPEUTA = {
-//   id: 1,
-//   nome: "Dr. Ana Silva",
-//   email: "ana.silva@fisiocare.com",
-//   crefito: "12345-F",
-//   cargo: "Fisioterapia Ortopédica",
-//   telefone: "(11) 98765-4321",
-//   foto: "/physiotherapist-profile.png",
-//   is_active: true,
-//   created_at: "2023-01-15T10:30:00Z",
-// }
+import { useAuth } from "../context/AuthContext"
 
 const LoginFisioterapeuta = () => {
   const [username, setUsername] = useState("")
@@ -32,22 +13,30 @@ const LoginFisioterapeuta = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError("")
-  setIsLoading(true)
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-  try {
-  await loginWithUsername({ username, password })
-  console.log("Login realizado com sucesso como fisioterapeuta")
-  navigate("/dashboard-fisioterapeuta")
-} catch (err) {
-  console.error("Erro ao logar:", err)
-  setError(err.message || "Credenciais inválidas. Tente novamente.")
-}
+    try {
+      await loginWithUsername({ username, password })
 
-}
+      const mockFisioterapeuta = {
+        username,
+        foto: "/physiotherapist-profile.png"
+      }
+
+      login(mockFisioterapeuta, "fisioterapeuta")
+      navigate("/dashboard-fisioterapeuta")
+    } catch (err) {
+      console.error("Erro ao logar:", err)
+      setError(err.message || "Credenciais inválidas. Tente novamente.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="flex h-screen">
@@ -67,8 +56,6 @@ const LoginFisioterapeuta = () => {
           <p className="mb-6 text-lg text-gray-600 text-center">Acesso exclusivo para profissionais</p>
 
           {error && <p className="mb-4 text-red-500">{error}</p>}
-
-          
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">

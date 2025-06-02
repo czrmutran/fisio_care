@@ -1,59 +1,45 @@
 "use client"
 
 import { createContext, useState, useContext, useEffect } from "react"
-import api from "../api"
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [role, setRole] = useState(null) // <- Adicionado para diferenciar cliente/fisioterapeuta
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is logged in on component mount
     const token = localStorage.getItem("token")
-    if (token) {
-      // Fetch user data if token exists
-      fetchUserData()
-    } else {
-      setLoading(false)
+    const storedUser = localStorage.getItem("user")
+    const storedRole = localStorage.getItem("role")
+
+    if (token && storedUser && storedRole) {
+      setUser(JSON.parse(storedUser))
+      setRole(storedRole)
     }
+    setLoading(false)
   }, [])
 
-  const fetchUserData = async () => {
-    try {
-      const response = await api.get("/user/")
-      setUser(response.data)
-    } catch (error) {
-      console.error("Failed to fetch user data:", error)
-      // If token is invalid, clear it
-      localStorage.removeItem("token")
-      localStorage.removeItem("refreshToken")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const login = async (credentials) => {
-    const response = await api.post("/token/", credentials)
-    localStorage.setItem("token", response.data.access)
-    localStorage.setItem("refreshToken", response.data.refresh)
-    await fetchUserData()
-    return response.data
+  const login = (userData, userRole) => {
+    localStorage.setItem("user", JSON.stringify(userData))
+    localStorage.setItem("role", userRole)
+    localStorage.setItem("token", "mock-token") // Substitua se for token real
+    setUser(userData)
+    setRole(userRole)
   }
 
   const logout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("refreshToken")
+    localStorage.removeItem("user")
+    localStorage.removeItem("role")
     setUser(null)
-  }
-
-  const register = async (userData) => {
-    return await api.post("/register/", userData)
+    setRole(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, role, login, logout, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   )

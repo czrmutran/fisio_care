@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { loginWithUsername } from "../api/loginService"
-
+import { useAuth } from "../context/AuthContext"
 
 const Login = () => {
   const [username, setUsername] = useState("")
@@ -12,7 +12,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const navigate = useNavigate()
-  
+  const { login } = useAuth()
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
@@ -20,7 +21,16 @@ const Login = () => {
 
     try {
       await loginWithUsername({ username, password })
-      navigate("/dashboard") // ou outro caminho que quiser
+
+      // Simule ou recupere os dados do usuário
+      const mockUser = {
+        username,
+        foto: "/placeholder.svg"
+      }
+
+      login(mockUser, "cliente") // ou "fisioterapeuta" se for outro componente
+
+      navigate("/dashboard")
     } catch (err) {
       setError(err.message || "Erro ao fazer login.")
     } finally {
