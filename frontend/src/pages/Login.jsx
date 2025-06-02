@@ -20,7 +20,7 @@ const Login = () => {
   setIsLoading(true)
 
   try {
-    const { email, role } = await loginWithUsername({ username, password, expectedRole: "paciente" })
+    const { email,  } = await loginWithUsername({ username, password, expectedRole: "paciente" })
     login({ username, email }, "paciente")
     navigate("/dashboard")
   } catch (err) {

@@ -181,7 +181,7 @@ const MOCK_CONSULTATIONS = [
 const DashboardFisioterapeuta = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const [error, ] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [dashboardData, setDashboardData] = useState({
     consultations: [],

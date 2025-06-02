@@ -21,7 +21,7 @@ const LoginFisioterapeuta = () => {
     setIsLoading(true)
 
   try {
-    const { email, role } = await loginWithUsername({ username, password, expectedRole: "fisioterapeuta" })
+    const { email,  } = await loginWithUsername({ username, password, expectedRole: "fisioterapeuta" })
     login({ username, email }, "fisioterapeuta")
     navigate("/dashboard-fisioterapeuta")
   } catch (err) {
