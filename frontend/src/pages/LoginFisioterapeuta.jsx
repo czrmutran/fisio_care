@@ -20,22 +20,15 @@ const LoginFisioterapeuta = () => {
     setError("")
     setIsLoading(true)
 
-    try {
-      await loginWithUsername({ username, password })
-
-      const mockFisioterapeuta = {
-        username,
-        foto: "/physiotherapist-profile.png"
-      }
-
-      login(mockFisioterapeuta, "fisioterapeuta")
-      navigate("/dashboard-fisioterapeuta")
-    } catch (err) {
-      console.error("Erro ao logar:", err)
-      setError(err.message || "Credenciais inválidas. Tente novamente.")
-    } finally {
-      setIsLoading(false)
-    }
+  try {
+    const { email, role } = await loginWithUsername({ username, password, expectedRole: "fisioterapeuta" })
+    login({ username, email }, "fisioterapeuta")
+    navigate("/dashboard-fisioterapeuta")
+  } catch (err) {
+    setError(err.message || "Erro ao fazer login.")
+  } finally {
+    setIsLoading(false)
+  }
   }
 
   return (

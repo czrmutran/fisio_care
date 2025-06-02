@@ -15,28 +15,20 @@ const Login = () => {
   const { login } = useAuth()
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+  e.preventDefault()
+  setError("")
+  setIsLoading(true)
 
-    try {
-      await loginWithUsername({ username, password })
-
-      // Simule ou recupere os dados do usuário
-      const mockUser = {
-        username,
-        foto: "/placeholder.svg"
-      }
-
-      login(mockUser, "cliente") // ou "fisioterapeuta" se for outro componente
-
-      navigate("/dashboard")
-    } catch (err) {
-      setError(err.message || "Erro ao fazer login.")
-    } finally {
-      setIsLoading(false)
-    }
+  try {
+    const { email, role } = await loginWithUsername({ username, password, expectedRole: "paciente" })
+    login({ username, email }, "paciente")
+    navigate("/dashboard")
+  } catch (err) {
+    setError(err.message || "Erro ao fazer login.")
+  } finally {
+    setIsLoading(false)
   }
+}
 
   return (
     <div className="flex h-screen">
