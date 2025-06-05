@@ -87,51 +87,56 @@ const Register = () => {
   }
 
   const handleSubmit = async () => {
-    setError("")
-    setSuccess("")
-    setIsLoading(true)
+  setError("")
+  setSuccess("")
+  setIsLoading(true)
 
-    const formattedDate = new Date(birthDate).toISOString().split("T")[0]
+  const formattedDate = new Date(birthDate).toISOString().split("T")[0]
 
-    try {
-      // 1. Cria o usuário no auth
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username: username
-          }
-        }
+  try {
+    // 1. Cria o usuário no Supabase Auth
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username }
+      }
+    })
+
+    if (signUpError) throw signUpError
+
+    // ⚠️ Aguarda o ID do usuário
+    const userId = signUpData?.user?.id
+    if (!userId) {
+      throw new Error("ID do usuário não encontrado após cadastro.")
+    }
+
+    // 2. Insere os dados na tabela clientes
+    const { error: insertError } = await supabase
+      .from("clientes")
+      .insert({
+        id: userId,
+        nome_completo: name,
+        cpf,
+        rg,
+        telefone: phone,
+        endereco: address,
+        data_nascimento: formattedDate
       })
 
+    if (insertError) throw insertError
 
-      if (signUpError) throw signUpError
-
-      // 2. Insere os dados complementares na tabela `clientes`
-      const { error: insertError } = await supabase
-        .from("clientes")
-        .insert({
-          id: signUpData.user.id,
-          nome_completo: name,
-          cpf,
-          rg,
-          telefone: phone,
-          endereco: address,
-          data_nascimento: formattedDate
-        })
-
-      if (insertError) throw insertError
-
-      setSuccess("Cadastro realizado com sucesso! Verifique seu e-mail.")
-      setTimeout(() => navigate("/login"), 2000)
-    } catch (err) {
-      console.error(err)
-      setError("Erro no cadastro: " + err.message)
-    } finally {
-      setIsLoading(false)
-    }
+    // 3. Redireciona
+    setSuccess("Cadastro realizado com sucesso!")
+    setTimeout(() => navigate("/login"), 2000)
+  } catch (err) {
+    console.error(err)
+    setError("Erro no cadastro: " + err.message)
+  } finally {
+    setIsLoading(false)
   }
+}
+
 
 
   return (
