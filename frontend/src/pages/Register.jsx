@@ -91,25 +91,25 @@ const Register = () => {
     const formattedDate = new Date(birthDate).toISOString().split("T")[0]
 
     try {
-      // 1. Cria o usuário no auth
+      // 1. Cadastra no Supabase Auth SEM verificação de e-mail
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            username: username
-          }
+          data: { username }
         }
       })
 
-
       if (signUpError) throw signUpError
 
-      // 2. Insere os dados complementares na tabela `clientes`
+      const userId = signUpData?.user?.id
+      if (!userId) throw new Error("Erro ao obter o ID do usuário.")
+
+      // 2. Insere os dados diretamente na tabela `pacientes`
       const { error: insertError } = await supabase
-        .from("clientes")
+        .from("pacientes")
         .insert({
-          id: signUpData.user.id,
+          id: userId,
           nome_completo: name,
           cpf,
           rg,
@@ -120,8 +120,9 @@ const Register = () => {
 
       if (insertError) throw insertError
 
-      setSuccess("Cadastro realizado com sucesso! Verifique seu e-mail.")
-      setTimeout(() => navigate("/login"), 2000)
+      // 3. Redireciona
+      setSuccess("Cadastro realizado com sucesso!")
+      setTimeout(() => navigate("/login"), 3000)
     } catch (err) {
       console.error(err)
       setError("Erro no cadastro: " + err.message)
@@ -129,6 +130,10 @@ const Register = () => {
       setIsLoading(false)
     }
   }
+
+
+
+
 
 
   return (

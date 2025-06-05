@@ -15,20 +15,26 @@ const Login = () => {
   const { login } = useAuth()
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError("")
-  setIsLoading(true)
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-  try {
-    const { email,  } = await loginWithUsername({ username, password, expectedRole: "paciente" })
-    login({ username, email }, "paciente")
-    navigate("/dashboard")
-  } catch (err) {
-    setError(err.message || "Erro ao fazer login.")
-  } finally {
-    setIsLoading(false)
+    try {
+      const { id, email,  } = await loginWithUsername({
+        username,
+        password,
+        expectedRole: "cliente",
+      })
+
+      login({ id, email }, "cliente") // Aqui é onde o ID é passado corretamente
+      navigate("/dashboard")
+    } catch (err) {
+      setError(err.message || "Erro ao fazer login.")
+    } finally {
+      setIsLoading(false)
+    }
   }
-}
+
 
   return (
     <div className="flex h-screen">

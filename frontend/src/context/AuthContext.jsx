@@ -3,10 +3,8 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "../lib/supabaseClient"
 
-// ✅ Define o contexto explicitamente com valor inicial undefined
 const AuthContext = createContext(undefined)
 
-// ✅ Função nomeada (evita problemas com Fast Refresh)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState(null)
@@ -27,7 +25,7 @@ export function AuthProvider({ children }) {
 
   const login = async (userData, userRole) => {
     try {
-      const table = userRole === "cliente" ? "clientes" : "fisioterapeutas"
+      const table = userRole === "cliente" ? "pacientes" : "fisioterapeutas"
 
       const { data: profileData, error } = await supabase
         .from(table)
@@ -36,7 +34,7 @@ export function AuthProvider({ children }) {
         .single()
 
       if (error) {
-        console.error(`Erro ao buscar dados do ${userRole}:`, error)
+        console.error("Erro ao buscar perfil:", error)
         return
       }
 
@@ -49,9 +47,10 @@ export function AuthProvider({ children }) {
       setUser(finalUser)
       setRole(userRole)
     } catch (err) {
-      console.error("Erro ao fazer login:", err)
+      console.error("Erro no login:", err)
     }
   }
+
 
   const logout = () => {
     localStorage.clear()
@@ -66,7 +65,6 @@ export function AuthProvider({ children }) {
   )
 }
 
-// ✅ Hook nomeado fora do componente
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
