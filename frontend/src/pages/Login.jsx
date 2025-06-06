@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { loginWithUsername } from "../api/loginService"
 import { useAuth } from "../context/AuthContext"
+import { supabase } from "../lib/supabaseClient"
 
 const Login = () => {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -15,20 +15,45 @@ const Login = () => {
   const { login } = useAuth()
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError("")
-  setIsLoading(true)
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-  try {
-    const { email, role } = await loginWithUsername({ username, password, expectedRole: "paciente" })
-    login({ username, email }, "paciente")
-    navigate("/dashboard")
-  } catch (err) {
-    setError(err.message || "Erro ao fazer login.")
-  } finally {
-    setIsLoading(false)
+    try {
+      // Faz o login no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (authError) throw new Error("Email ou senha incorretos.")
+
+      // Busca o perfil do cliente na tabela `clientes` usando o ID do auth
+      const { data: userFound, error: profileError } = await supabase
+        .from("clientes")
+        .select("*")
+        .eq("id", authData.user.id)
+        .single()
+
+      if (profileError || !userFound) throw new Error("Perfil não encontrado.")
+
+      // Realiza o login salvando dados no localStorage
+      login({
+        id: userFound.id,
+        email: authData.user.email,
+        nome_completo: userFound.nome_completo,
+        telefone: userFound.telefone,
+        cpf: userFound.cpf,
+        rg: userFound.rg,
+      }, "paciente")
+
+      navigate("/dashboard")
+    } catch (err) {
+      setError(err.message || "Erro ao fazer login.")
+    } finally {
+      setIsLoading(false)
+    }
   }
-}
 
   return (
     <div className="flex h-screen">
@@ -47,15 +72,15 @@ const Login = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block mb-2 font-semibold">
-                Username
+              <label htmlFor="email" className="block mb-2 font-semibold">
+                Email
               </label>
               <input
-                id="username"
-                type="text"
-                placeholder="Digite seu username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="Digite seu e-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
               />
