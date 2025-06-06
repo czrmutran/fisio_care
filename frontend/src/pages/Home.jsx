@@ -44,7 +44,7 @@ const Home = () => {
                 <>
                   <img
                     onClick={handleDashboard}
-                    src={user?.foto || "/placeholder.svg"}
+                    src={user?.foto || "/perfil-icon.png"}
                     alt="Avatar"
                     className="h-10 w-10 rounded-full cursor-pointer object-cover"
                   />
