@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Stethoscope } from "lucide-react"
-import { loginWithUsername } from "../api/loginService"
+import { supabase } from "../lib/supabaseClient"
 import { useAuth } from "../context/AuthContext"
 
 const LoginFisioterapeuta = () => {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -20,15 +20,39 @@ const LoginFisioterapeuta = () => {
     setError("")
     setIsLoading(true)
 
-  try {
-    const { email, role } = await loginWithUsername({ username, password, expectedRole: "fisioterapeuta" })
-    login({ username, email }, "fisioterapeuta")
-    navigate("/dashboard-fisioterapeuta")
-  } catch (err) {
-    setError(err.message || "Erro ao fazer login.")
-  } finally {
-    setIsLoading(false)
-  }
+    try {
+      // 1. Autenticar no Supabase Auth pelo email
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (authError || !data?.user) {
+        throw new Error("Email ou senha inválidos.")
+      }
+
+      const userId = data.user.id
+
+      // 2. Buscar o perfil do fisioterapeuta na tabela com base no ID do auth
+      const { data: perfil, error: perfilError } = await supabase
+        .from("fisioterapeutas")
+        .select("*")
+        .eq("id", userId)
+        .single()
+
+      if (perfilError || !perfil) {
+        throw new Error("Perfil do fisioterapeuta não encontrado.")
+      }
+
+      // 3. Salvar dados no contexto
+      login(perfil, "fisioterapeuta")
+
+      navigate("/dashboard-fisioterapeuta")
+    } catch (err) {
+      setError(err.message || "Erro ao fazer login.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -52,15 +76,15 @@ const LoginFisioterapeuta = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block mb-2 font-semibold">
-                Username
+              <label htmlFor="email" className="block mb-2 font-semibold">
+                E-mail
               </label>
               <input
-                id="username"
-                type="text"
-                placeholder="Digite seu username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="Digite seu e-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                 required
               />

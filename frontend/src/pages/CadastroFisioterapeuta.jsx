@@ -82,7 +82,7 @@ const CadastroFisioterapeuta = () => {
         nome_completo: formData.nome,
         crefito: formData.crefito,
         especialidade: formData.cargo,
-        telefone: formData.telefone
+        telefone: formData.telefone,
       })
 
       if (insertError) throw insertError
