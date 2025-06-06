@@ -31,6 +31,8 @@ const AgendarConsulta = () => {
     "Fisioterapia Neurológica",
     "Fisioterapia Respiratória",
     "Fisioterapia Esportiva",
+    "Fisioterapia Geriátrica",
+    "Fisioterapia Pediátrica",
     "Pilates Clínico",
     "Acupuntura",
   ]
