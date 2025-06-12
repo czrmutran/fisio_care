@@ -13,6 +13,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [selectedConsultation, setSelectedConsultation] = useState(null)
+  const [editConsultation, setEditConsultation] = useState(null)
+  const [newDate, setNewDate] = useState("")
+  const [newTime, setNewTime] = useState("")
 
   useEffect(() => {
     const fetchConsultations = async () => {
@@ -23,10 +26,11 @@ const Dashboard = () => {
           .from("consultas")
           .select("id, service, date, time, status, fisioterapeuta_id, fisioterapeutas!consultas_fisioterapeuta_id_fkey(nome_completo)")
           .eq("cliente_id", user.id)
+          .neq("status", "cancelada")
           .order("date", { ascending: true })
 
         if (error) throw error
-        setConsultations((data || []).filter(c => c.status !== "cancelada"))
+        setConsultations(data || [])
       } catch (err) {
         console.error(err)
         setError("Falha ao carregar consultas")
@@ -60,8 +64,28 @@ const Dashboard = () => {
     setConsultations((prev) => prev.filter((c) => c.id !== id))
   }
 
-  const remarcarConsulta = (id) => {
-    navigate(`/remarcar-consulta/${id}`)
+  const remarcarConsulta = (consultation) => {
+    setEditConsultation(consultation)
+    setNewDate(consultation.date)
+    setNewTime(consultation.time)
+  }
+
+  const salvarEdicao = async () => {
+    const { error } = await supabase
+      .from("consultas")
+      .update({ date: newDate, time: newTime })
+      .eq("id", editConsultation.id)
+
+    if (!error) {
+      setConsultations((prev) =>
+        prev.map((c) =>
+          c.id === editConsultation.id ? { ...c, date: newDate, time: newTime } : c
+        )
+      )
+      setEditConsultation(null)
+    } else {
+      console.error("Erro ao editar consulta:", error)
+    }
   }
 
   if (loading) {
@@ -146,7 +170,7 @@ const Dashboard = () => {
                         ) : (
                           <>
                             <button
-                              onClick={() => remarcarConsulta(consultation.id)}
+                              onClick={() => remarcarConsulta(consultation)}
                               className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                             >
                               <Pencil className="h-4 w-4" /> Editar
@@ -193,6 +217,28 @@ const Dashboard = () => {
               >
                 Confirmar Cancelamento
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editConsultation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-lg font-bold mb-4">Remarcar Consulta</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Nova Data</label>
+                <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="w-full border p-2 rounded" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Novo Horário</label>
+                <input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} className="w-full border p-2 rounded" />
+              </div>
+              <div className="flex justify-end space-x-4">
+                <button onClick={() => setEditConsultation(null)} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancelar</button>
+                <button onClick={salvarEdicao} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Salvar</button>
+              </div>
             </div>
           </div>
         </div>
