@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { supabase } from "../lib/supabaseClient"
-import { Calendar, Clock, FileText, Pencil, XCircle } from "lucide-react"
+import { Calendar, Clock, FileText, Pencil, XCircle, Trash2 } from "lucide-react"
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -26,7 +26,7 @@ const Dashboard = () => {
           .order("date", { ascending: true })
 
         if (error) throw error
-        setConsultations(data || [])
+        setConsultations((data || []).filter(c => c.status !== "cancelada"))
       } catch (err) {
         console.error(err)
         setError("Falha ao carregar consultas")
@@ -54,6 +54,10 @@ const Dashboard = () => {
     } else {
       console.error("Erro ao cancelar consulta:", error)
     }
+  }
+
+  const removerConsulta = (id) => {
+    setConsultations((prev) => prev.filter((c) => c.id !== id))
   }
 
   const remarcarConsulta = (id) => {
@@ -132,21 +136,26 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 flex space-x-2">
-                        {consultation.status !== "cancelada" && (
+                        {consultation.status === "cancelada" ? (
+                          <button
+                            onClick={() => removerConsulta(consultation.id)}
+                            className="text-sm px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                          >
+                            Remover da lista
+                          </button>
+                        ) : (
                           <>
                             <button
                               onClick={() => remarcarConsulta(consultation.id)}
-                              className="text-blue-600 hover:text-blue-800"
-                              title="Remarcar"
+                              className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                             >
-                              <Pencil className="h-5 w-5" />
+                              <Pencil className="h-4 w-4" /> Editar
                             </button>
                             <button
                               onClick={() => setSelectedConsultation(consultation)}
-                              className="text-red-600 hover:text-red-800"
-                              title="Cancelar"
+                              className="flex items-center gap-1 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
                             >
-                              <XCircle className="h-5 w-5" />
+                              <XCircle className="h-4 w-4" /> Cancelar
                             </button>
                           </>
                         )}
