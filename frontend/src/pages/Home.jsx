@@ -12,6 +12,14 @@ const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
+  // Função para rolagem suave
+  const scrollToSection = (elementId) => {
+    const element = document.getElementById(elementId)
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
   // Verificar autenticação
   useEffect(() => {
     setIsAuthenticated(!!user)
@@ -60,7 +68,7 @@ const Home = () => {
     {
       name: "Ana Silva",
       role: "Paciente de Fisioterapia Ortopédica",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-female-9.png",
       quote:
         "A Fisio Care transformou minha recuperação após a cirurgia no joelho. Em apenas 2 meses, voltei a praticar esportes sem dor.",
       rating: 5,
@@ -68,7 +76,8 @@ const Home = () => {
     {
       name: "Carlos Oliveira",
       role: "Paciente de Fisioterapia Neurológica",
-      image: "/placeholder.svg?height=80&width=80",
+      image:
+        "https://png.pngtree.com/png-vector/20220709/ourmid/pngtree-businessman-user-avatar-wearing-suit-with-red-tie-png-image_5809521.png",
       quote:
         "Após meu AVC, achei que nunca mais teria independência. Com o tratamento personalizado, recuperei movimentos que achei perdidos.",
       rating: 5,
@@ -76,7 +85,7 @@ const Home = () => {
     {
       name: "Mariana Costa",
       role: "Atleta Profissional",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png",
       quote:
         "Como atleta, lesões são parte do caminho. A equipe da Fisio Care não só me recuperou, mas me ensinou a prevenir novas lesões.",
       rating: 5,
@@ -97,30 +106,46 @@ const Home = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link
-                to="/#servicos"
+              <a
+                href="#servicos"
                 className={`${isScrolled ? "text-gray-700" : "text-gray-800"} hover:text-blue-600 transition-colors`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("servicos").scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 Serviços
-              </Link>
-              <Link
-                to="/#sobre"
+              </a>
+              <a
+                href="#sobre"
                 className={`${isScrolled ? "text-gray-700" : "text-gray-800"} hover:text-blue-600 transition-colors`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("sobre").scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 Sobre nós
-              </Link>
-              <Link
-                to="/#depoimentos"
+              </a>
+              <a
+                href="#depoimentos"
                 className={`${isScrolled ? "text-gray-700" : "text-gray-800"} hover:text-blue-600 transition-colors`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("depoimentos").scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 Depoimentos
-              </Link>
-              <Link
-                to="/#contato"
+              </a>
+              <a
+                href="#contato"
                 className={`${isScrolled ? "text-gray-700" : "text-gray-800"} hover:text-blue-600 transition-colors`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("contato").scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 Contato
-              </Link>
+              </a>
 
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
@@ -171,34 +196,50 @@ const Home = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white shadow-lg mt-2 py-4 px-4 absolute w-full">
             <div className="flex flex-col space-y-4">
-              <Link
-                to="/#servicos"
+              <a
+                href="#servicos"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("servicos").scrollIntoView({ behavior: "smooth" })
+                  setIsMenuOpen(false)
+                }}
               >
                 Serviços
-              </Link>
-              <Link
-                to="/#sobre"
+              </a>
+              <a
+                href="#sobre"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("sobre").scrollIntoView({ behavior: "smooth" })
+                  setIsMenuOpen(false)
+                }}
               >
                 Sobre nós
-              </Link>
-              <Link
-                to="/#depoimentos"
+              </a>
+              <a
+                href="#depoimentos"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("depoimentos").scrollIntoView({ behavior: "smooth" })
+                  setIsMenuOpen(false)
+                }}
               >
                 Depoimentos
-              </Link>
-              <Link
-                to="/#contato"
+              </a>
+              <a
+                href="#contato"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById("contato").scrollIntoView({ behavior: "smooth" })
+                  setIsMenuOpen(false)
+                }}
               >
                 Contato
-              </Link>
+              </a>
 
               <div className="pt-4 border-t border-gray-200">
                 {isAuthenticated ? (
@@ -444,7 +485,7 @@ const Home = () => {
               <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-blue-50 rounded-full opacity-70"></div>
               <div className="relative z-10 rounded-lg overflow-hidden shadow-xl">
                 <img
-                  src="/placeholder.svg?height=400&width=600"
+                  src="https://www.maisterapias.com.br/wp-content/uploads/2025/02/1502.png"
                   alt="Equipe Fisio Care"
                   className="w-full h-auto object-cover"
                 />
@@ -624,7 +665,7 @@ const Home = () => {
                   </div>
                   <div className="ml-4">
                     <h4 className="text-lg font-medium text-gray-900">Endereço</h4>
-                    <p className="mt-1 text-gray-600">Av. Paulista, 1000 - São Paulo, SP</p>
+                    <p className="mt-1 text-gray-600">Av. Alcindo Cacela, 287 - Umarizal, Belém - PA, 66060-902</p>
                   </div>
                 </div>
               </div>
@@ -686,6 +727,11 @@ const Home = () => {
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">Fisio Care</h3>
+              <p className="text-gray-400">Cuidando da sua saúde e bem-estar com excelência e dedicação.</p>
+            </div>
+
             <div>
               <h3 className="text-xl font-bold mb-4">Fisio Care</h3>
               <p className="text-gray-400">Cuidando da sua saúde e bem-estar com excelência e dedicação.</p>

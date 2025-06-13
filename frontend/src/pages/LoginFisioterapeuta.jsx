@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { Stethoscope, Info } from "lucide-react"
+import { ArrowLeft, Stethoscope } from "lucide-react"
 import { supabase } from "../lib/supabaseClient"
 import { useAuth } from "../context/AuthContext"
 
@@ -21,8 +21,12 @@ const LoginFisioterapeuta = () => {
     setIsLoading(true)
 
     try {
+      console.log("Tentando login com:", email) // Log para debug
+
       // Verificar se são as credenciais de demonstração
       if (email === "fisio@demo.com" && password === "demo123") {
+        console.log("Usando credenciais de demonstração") // Log para debug
+
         // Login de demonstração
         login(
           {
@@ -35,7 +39,13 @@ const LoginFisioterapeuta = () => {
           },
           "fisioterapeuta",
         )
-        navigate("/dashboard-fisioterapeuta")
+
+        console.log("Redirecionando para dashboard-fisioterapeuta") // Log para debug
+
+        // Adicionando um pequeno atraso para garantir que o login seja processado
+        setTimeout(() => {
+          navigate("/dashboard-fisioterapeuta")
+        }, 500)
         return
       }
 
@@ -65,64 +75,48 @@ const LoginFisioterapeuta = () => {
       // Salvar dados no contexto
       login(perfil, "fisioterapeuta")
 
-      navigate("/dashboard-fisioterapeuta")
+      console.log("Login normal bem-sucedido, redirecionando") // Log para debug
+
+      // Adicionando um pequeno atraso para garantir que o login seja processado
+      setTimeout(() => {
+        navigate("/dashboard-fisioterapeuta")
+      }, 500)
     } catch (err) {
+      console.error("Erro de login:", err) // Log para debug
       setError(err.message || "Erro ao fazer login.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Função para preencher as credenciais de demonstração
-  const fillDemoCredentials = () => {
-    setEmail("fisio@demo.com")
-    setPassword("demo123")
-  }
-
   return (
-    <div className="flex h-screen">
-      <div className="flex flex-col items-center justify-center w-full p-8 bg-white md:w-1/2">
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <div className="mb-6">
-            <Link to="/" className="text-blue-600 hover:text-blue-800 flex items-center">
-              ← Voltar para a página inicial
-            </Link>
-          </div>
+          <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-8 transition-colors">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            <span>Voltar para a página inicial</span>
+          </Link>
 
-          <div className="flex items-center justify-center mb-6">
-            <Stethoscope className="h-12 w-12 text-blue-600 mr-3" />
-            <h1 className="text-3xl font-bold text-blue-700">Portal Fisioterapeuta</h1>
-          </div>
-
-          <p className="mb-6 text-lg text-gray-600 text-center">Acesso exclusivo para profissionais</p>
-
-          {/* Bloco de informações de demonstração */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start">
-            <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-blue-800 font-medium">Credenciais de demonstração</p>
-              <p className="text-sm text-blue-600 mt-1">
-                Email: <span className="font-mono">fisio@demo.com</span>
-              </p>
-              <p className="text-sm text-blue-600">
-                Senha: <span className="font-mono">demo123</span>
-              </p>
-              <button
-                type="button"
-                onClick={fillDemoCredentials}
-                className="mt-2 text-xs text-blue-700 hover:text-blue-900 underline"
-              >
-                Preencher automaticamente
-              </button>
+          <div className="flex items-center mb-8">
+            <div className="bg-blue-100 p-3 rounded-full">
+              <Stethoscope className="h-8 w-8 text-blue-600" />
             </div>
+            <h1 className="ml-4 text-3xl font-bold text-gray-900">Portal Fisioterapeuta</h1>
           </div>
 
-          {error && <p className="mb-4 text-red-500">{error}</p>}
+          <p className="text-gray-600 mb-8">Acesso exclusivo para profissionais</p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="email" className="block mb-2 font-semibold">
-                E-mail
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
+              <p>{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
               </label>
               <input
                 id="email"
@@ -130,45 +124,103 @@ const LoginFisioterapeuta = () => {
                 placeholder="Digite seu e-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                 required
               />
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="password" className="block mb-2 font-semibold">
-                Senha
-              </label>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Senha
+                </label>
+                <Link to="/esqueci-senha" className="text-sm text-blue-600 hover:text-blue-800">
+                  Esqueceu sua senha?
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"
                 placeholder="Digite sua senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                 required
               />
             </div>
 
             <button
               type="submit"
-              className="w-full px-4 py-2 text-white transition bg-blue-600 rounded hover:bg-blue-700 disabled:bg-blue-300"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               disabled={isLoading}
             >
-              {isLoading ? "Processando..." : "Entrar"}
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Processando...
+                </>
+              ) : (
+                "Entrar"
+              )}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-gray-600">
-            Não tem uma conta de fisioterapeuta?{" "}
-            <Link to="/cadastro-fisioterapeuta" className="text-blue-600 hover:text-blue-800">
-              Cadastre-se
-            </Link>
-          </p>
+          <div className="mt-8 text-center">
+            <p className="text-gray-600">
+              Não tem uma conta de fisioterapeuta?{" "}
+              <Link to="/cadastro-fisioterapeuta" className="text-blue-600 hover:text-blue-800 font-medium">
+                Cadastre-se
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="hidden w-full md:block md:w-1/2 bg-cover bg-center bg-[url('/medical-professional-working.png')]"></div>
+      <div className="hidden lg:block lg:w-1/2 bg-cover bg-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-blue-600 opacity-90"></div>
+        <div className="absolute inset-0 flex flex-col justify-center px-12">
+          <h2 className="text-4xl font-bold text-white mb-6">Portal do Profissional</h2>
+          <p className="text-xl text-blue-100 mb-8">
+            Gerencie sua agenda, pacientes e tratamentos em uma única plataforma.
+          </p>
+          <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
+            <p className="text-white text-lg font-medium mb-4">Recursos exclusivos para fisioterapeutas:</p>
+            <ul className="space-y-3">
+              <li className="flex items-center text-blue-100">
+                <div className="w-2 h-2 rounded-full bg-blue-200 mr-3"></div>
+                Agenda inteligente com notificações
+              </li>
+              <li className="flex items-center text-blue-100">
+                <div className="w-2 h-2 rounded-full bg-blue-200 mr-3"></div>
+                Prontuário eletrônico completo
+              </li>
+              <li className="flex items-center text-blue-100">
+                <div className="w-2 h-2 rounded-full bg-blue-200 mr-3"></div>
+                Relatórios de evolução dos pacientes
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
