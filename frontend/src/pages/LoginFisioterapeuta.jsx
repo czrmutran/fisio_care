@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { Stethoscope } from "lucide-react"
+import { Stethoscope, Info } from "lucide-react"
 import { supabase } from "../lib/supabaseClient"
 import { useAuth } from "../context/AuthContext"
 
@@ -21,10 +21,28 @@ const LoginFisioterapeuta = () => {
     setIsLoading(true)
 
     try {
-      // 1. Autenticar no Supabase Auth pelo email
+      // Verificar se são as credenciais de demonstração
+      if (email === "fisio@demo.com" && password === "demo123") {
+        // Login de demonstração
+        login(
+          {
+            id: "demo-fisio-id",
+            email: "fisio@demo.com",
+            nome_completo: "Fisioterapeuta Demonstração",
+            especialidade: "Fisioterapia Ortopédica",
+            crefito: "12/34567-AB",
+            telefone: "(11) 98765-4321",
+          },
+          "fisioterapeuta",
+        )
+        navigate("/dashboard-fisioterapeuta")
+        return
+      }
+
+      // Login normal no Supabase Auth
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       })
 
       if (authError || !data?.user) {
@@ -33,7 +51,7 @@ const LoginFisioterapeuta = () => {
 
       const userId = data.user.id
 
-      // 2. Buscar o perfil do fisioterapeuta na tabela com base no ID do auth
+      // Buscar o perfil do fisioterapeuta
       const { data: perfil, error: perfilError } = await supabase
         .from("fisioterapeutas")
         .select("*")
@@ -44,7 +62,7 @@ const LoginFisioterapeuta = () => {
         throw new Error("Perfil do fisioterapeuta não encontrado.")
       }
 
-      // 3. Salvar dados no contexto
+      // Salvar dados no contexto
       login(perfil, "fisioterapeuta")
 
       navigate("/dashboard-fisioterapeuta")
@@ -53,6 +71,12 @@ const LoginFisioterapeuta = () => {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Função para preencher as credenciais de demonstração
+  const fillDemoCredentials = () => {
+    setEmail("fisio@demo.com")
+    setPassword("demo123")
   }
 
   return (
@@ -71,6 +95,27 @@ const LoginFisioterapeuta = () => {
           </div>
 
           <p className="mb-6 text-lg text-gray-600 text-center">Acesso exclusivo para profissionais</p>
+
+          {/* Bloco de informações de demonstração */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start">
+            <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-blue-800 font-medium">Credenciais de demonstração</p>
+              <p className="text-sm text-blue-600 mt-1">
+                Email: <span className="font-mono">fisio@demo.com</span>
+              </p>
+              <p className="text-sm text-blue-600">
+                Senha: <span className="font-mono">demo123</span>
+              </p>
+              <button
+                type="button"
+                onClick={fillDemoCredentials}
+                className="mt-2 text-xs text-blue-700 hover:text-blue-900 underline"
+              >
+                Preencher automaticamente
+              </button>
+            </div>
+          </div>
 
           {error && <p className="mb-4 text-red-500">{error}</p>}
 
